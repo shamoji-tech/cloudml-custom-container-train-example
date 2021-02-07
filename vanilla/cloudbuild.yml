@@ -1,0 +1,31 @@
+steps:
+- name: 'gcr.io/cloud-builders/docker'
+  entrypoint: 'bash'
+  args:
+  - '-c'
+  - |
+    docker pull asia.gcr.io/$PROJECT_ID/$_IMAGE_NAME:$_VERSION || exit 0
+  id: Pull container image chache
+
+- name: 'gcr.io/cloud-builders/docker'
+  args: ['build',
+            '--build-arg', 'PROJECT_ID=$PROJECT_ID',
+            '-t', 'asia.gcr.io/$PROJECT_ID/$_IMAGE_NAME:$_VERSION',
+            '-t', 'asia.gcr.io/$PROJECT_ID/$_IMAGE_NAME:$SHORT_SHA',
+            '--cache-from', 'asia.gcr.io/$PROJECT_ID/$_IMAGE_NAME:$_VERSION',
+            '.']
+  timeout: 600s
+  id: docker build
+  
+- name: 'gcr.io/cloud-builders/docker'
+  args: ['push', 'asia.gcr.io/$PROJECT_ID/$_IMAGE_NAME:$_VERSION']
+  id: docker push version
+
+- name: 'gcr.io/cloud-builders/docker'
+  args: ['push', 'asia.gcr.io/$PROJECT_ID/$_IMAGE_NAME:$SHORT_SHA']
+  id: docker push short_sha
+
+timeout: 1200s
+
+  
+  
